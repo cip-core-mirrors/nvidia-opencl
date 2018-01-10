@@ -1,0 +1,36 @@
+image: docker
+
+services:
+    - docker:dind
+
+variables:
+    REPOSITORY: "${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}"
+    OS: "${CI_COMMIT_REF_NAME}"
+
+before_script:
+    - docker login -u "${REGISTRY_USER}" -p "${REGISTRY_TOKEN}"
+
+stages:
+    - opencl
+
+.opencl_template: &opencl_definition
+    stage: opencl
+    script:
+    - docker build --pull -t "${REPOSITORY}:runtime-${OS}"
+                   --label "com.nvidia.build.ref=${CI_COMMIT_SHA}"
+                   --label "com.nvidia.build.id=${CI_JOB_ID}"
+                   "runtime/"
+    - docker build -t "${REPOSITORY}:devel-${OS}"
+                   --build-arg "repository=${REPOSITORY}"
+                   "devel/"
+    - if [[ "${NO_OS_SUFFIX}" == true ]]; then
+          docker tag "${REPOSITORY}:runtime-${OS}" "${REPOSITORY}:runtime";
+          docker tag "${REPOSITORY}:devel-${OS}" "${REPOSITORY}:devel";
+      fi
+    - if [[ "${LATEST}" == true ]]; then
+          docker tag "${REPOSITORY}:devel-${OS}" "${REPOSITORY}:latest";
+      fi
+    - docker push "${REPOSITORY}"
+
+opencl:
+    <<: *opencl_definition
