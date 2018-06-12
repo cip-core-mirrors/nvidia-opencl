@@ -17,11 +17,11 @@ stages:
     stage: opencl
     script:
     - docker pull "${REPOSITORY}:runtime-${OS}" || true
-    - docker build --pull -t "${REPOSITORY}:runtime-${OS}"
+    - docker build --network=host --pull -t "${REPOSITORY}:runtime-${OS}"
                    --cache-from "${REPOSITORY}:runtime-${OS}"
                    "runtime/"
     - docker pull "${REPOSITORY}:devel-${OS}" || true
-    - docker build -t "${REPOSITORY}:devel-${OS}"
+    - docker build --network=host -t "${REPOSITORY}:devel-${OS}"
                    --cache-from "${REPOSITORY}:devel-${OS}"
                    --build-arg "repository=${REPOSITORY}"
                    "devel/"
