@@ -16,11 +16,13 @@ stages:
 .opencl_template: &opencl_definition
     stage: opencl
     script:
+    - docker pull "${REPOSITORY}:runtime-${OS}" || true
     - docker build --pull -t "${REPOSITORY}:runtime-${OS}"
-                   --label "com.nvidia.build.ref=${CI_COMMIT_SHA}"
-                   --label "com.nvidia.build.id=${CI_JOB_ID}"
+                   --cache-from "${REPOSITORY}:runtime-${OS}"
                    "runtime/"
+    - docker pull "${REPOSITORY}:devel-${OS}" || true
     - docker build -t "${REPOSITORY}:devel-${OS}"
+                   --cache-from "${REPOSITORY}:devel-${OS}"
                    --build-arg "repository=${REPOSITORY}"
                    "devel/"
     - if [[ "${NO_OS_SUFFIX}" == true ]]; then
