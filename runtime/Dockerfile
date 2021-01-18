@@ -1,7 +1,8 @@
 FROM centos:7
 LABEL maintainer "NVIDIA CORPORATION <cudatools@nvidia.com>"
 
-RUN yum install -y epel-release && \
+RUN yum -y update && \
+    yum install -y epel-release && \
     yum install -y \
         ocl-icd \
 	clinfo && \
